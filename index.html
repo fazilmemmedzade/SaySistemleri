@@ -1,0 +1,224 @@
+
+<!DOCTYPE html>
+<html lang="az">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Say sistemləri çeviricisi</title>
+<style>
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: #f3f5f8;
+    font-family: Arial, sans-serif;
+    color: #222;
+}
+
+.container {
+    width: 95%;
+    max-width: 480px;
+    padding: 30px;
+    background: white;
+    border: 1px solid #e4e7eb;
+    border-radius: 14px;
+}
+
+h2 {
+    margin: 0 0 8px;
+    text-align: center;
+}
+
+.subtitle {
+    text-align: center;
+    color: #777;
+    font-size: 14px;
+    margin-bottom: 28px;
+}
+
+label {
+    display: block;
+    margin: 16px 0 8px;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+input {
+    width: 100%;
+    padding: 13px;
+    border: 1px solid #d5dbe2;
+    border-radius: 8px;
+    font-size: 16px;
+    outline: none;
+}
+
+input:focus {
+    border-color: #2d6a4f;
+}
+
+.row {
+    display: flex;
+    gap: 12px;
+}
+
+.row > div {
+    flex: 1;
+    min-width: 0;
+}
+
+button {
+    width: 100%;
+    padding: 14px;
+    margin-top: 24px;
+    border: none;
+    border-radius: 8px;
+    background: #2d6a4f;
+    color: white;
+    font-size: 15px;
+    cursor: pointer;
+}
+
+button:hover {
+    background: #24563f;
+}
+
+.result {
+    display: none;
+    margin-top: 24px;
+    padding: 18px;
+    background: #f0f7f3;
+    border-radius: 8px;
+    overflow-wrap: anywhere;
+}
+
+.result small {
+    color: #64746b;
+}
+
+.result strong {
+    display: block;
+    margin-top: 8px;
+    font-size: 24px;
+}
+
+.error {
+    color: #c62828;
+    margin-top: 15px;
+    font-size: 14px;
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Say sistemləri çeviricisi</h2>
+    <p class="subtitle">
+        İstənilən say sistemindən digərinə çevirmə
+    </p>
+
+    <label>Ədəd</label>
+    <input id="number" type="text"
+           placeholder="Məsələn: 101101">
+
+    <div class="row">
+        <div>
+            <label>Hansı say sistemindən?</label>
+            <input id="fromBase" type="number"
+                   min="2" max="36" placeholder="2">
+        </div>
+
+        <div>
+            <label>Hansı say sisteminə?</label>
+            <input id="toBase" type="number"
+                   min="2" max="36" placeholder="10">
+        </div>
+    </div>
+
+    <button onclick="convert()">Çevir</button>
+
+    <div id="error" class="error"></div>
+
+    <div id="result" class="result">
+        <small>Nəticə</small>
+        <strong id="answer"></strong>
+    </div>
+</div>
+
+<script>
+const digits = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+
+function convert() {
+    const number = document.getElementById("number")
+        .value.trim().toUpperCase();
+
+    const from = Number(
+        document.getElementById("fromBase").value
+    );
+
+    const to = Number(
+        document.getElementById("toBase").value
+    );
+
+    const error = document.getElementById("error");
+    const result = document.getElementById("result");
+
+    error.textContent = "";
+    result.style.display = "none";
+
+    if (!number) {
+        error.textContent = "Ədəd daxil edin.";
+        return;
+    }
+
+    if (!Number.isInteger(from) ||
+        !Number.isInteger(to) ||
+        from < 2 || from > 36 ||
+        to < 2 || to > 36) {
+        error.textContent =
+            "Say sistemləri 2 ilə 36 arasında olmalıdır.";
+        return;
+    }
+
+    let negative = number.startsWith("-");
+    let value = negative ? number.slice(1) : number;
+
+    if (!value) {
+        error.textContent = "Düzgün ədəd daxil edin.";
+        return;
+    }
+
+    // Ədədi əvvəlcə 10-luq sistemə çeviririk
+    let decimal = 0n;
+
+    for (let char of value) {
+        let digit = digits.indexOf(char);
+
+        if (digit < 0 || digit >= from) {
+            error.textContent =
+                "Ədəd seçilmiş say sisteminə uyğun deyil.";
+            return;
+        }
+
+        decimal = decimal * BigInt(from) + BigInt(digit);
+    }
+
+    if (negative) decimal = -decimal;
+
+    // 10-luq sistemdən hədəf sistemə çeviririk
+    let answer = decimal.toString(to).toUpperCase();
+
+    document.getElementById("answer").textContent =
+        answer + " (" + to + "-lik)";
+
+    result.style.display = "block";
+}
+</script>
+
+</body>
+</html>
